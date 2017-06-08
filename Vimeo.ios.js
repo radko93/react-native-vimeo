@@ -4,9 +4,9 @@
  */
 import React from 'react';
 import {
-  StyleSheet
+  StyleSheet,
+  WebView
 } from 'react-native';
-import WebViewBridge from 'react-native-webview-bridge';
 
 
 function getVimeoPageURL(videoId) {
@@ -46,7 +46,7 @@ export default class Vimeo extends React.Component {
     if (!this.state.ready) {
       throw new Error('You cannot use the `api` method until `onReady` has been called');
     }
-    this.refs.webviewBridge.sendToBridge(method);
+    this.webView.postMessage(method);
     this.registerBridgeEventHandler(method, cb);
   }
 
@@ -62,7 +62,7 @@ export default class Vimeo extends React.Component {
     this.handlers[eventName] = handler;
   }
 
-  onBridgeMessage = (message) => {
+  onMessage = (message) => {
     let payload;
     try {
       payload = JSON.parse(message);
@@ -83,8 +83,8 @@ export default class Vimeo extends React.Component {
 
   render() {
     return (
-      <WebViewBridge
-        ref="webviewBridge"
+      <WebView
+        ref={(r) => {this.webView = r}}
         style={{
           // Accounts for player border
           marginTop: -8,
@@ -94,7 +94,7 @@ export default class Vimeo extends React.Component {
         source={{ uri: getVimeoPageURL(this.props.videoId) }}
         scalesPageToFit={this.props.scalesPageToFit}
         scrollEnabled={false}
-        onBridgeMessage={this.onBridgeMessage}
+        onMessage={this.onMessage}
         onError={(error) => console.error(error)}
       />
     );
